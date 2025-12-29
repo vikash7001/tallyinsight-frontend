@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TallyInsight Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f7f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 24px;
+      width: 320px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    label {
+      font-size: 14px;
+      display: block;
+      margin-top: 12px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>TallyInsight Admin</h2>
+
+    <label for="companyId">Company ID</label>
+    <input id="companyId" type="text" placeholder="Company UUID" />
+
+    <label for="userId">Admin User ID</label>
+    <input id="userId" type="text" placeholder="admin" />
+
+    <button onclick="login()">Continue</button>
+  </div>
+
+  <script>
+    function login() {
+      const companyId = document.getElementById('companyId').value.trim();
+      const userId = document.getElementById('userId').value.trim();
+
+      if (!companyId || !userId) {
+        alert('Both fields are required');
+        return;
+      }
+
+      localStorage.setItem('x-company-id', companyId);
+      localStorage.setItem('x-user-id', userId);
+
+      // dashboard page will be added next
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>
