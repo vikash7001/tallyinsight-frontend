@@ -163,35 +163,30 @@ if (!companyId || !userId) {
 /* ======================
    LOAD STOCK (READ ONLY)
 ====================== */
-let stockMap = {};
-
-fetch(`${API_BASE}/stock?limit=10000`, {
-  headers: {
-    'x-company-id': companyId,
-    'x-user-id': userId
-  }
-})
-.then(res => res.json())
-.then(rows => {
-  rows.forEach(r => {
-    stockMap[r.item_code] = r.stock_qty;
-  });
-})
-.catch(() => stockMap = {});
-
-/* ======================
-   LOAD ITEMS
-====================== */
 let allRows = [];
 
-fetch(`${API_BASE}/items`, {
-  headers: {
-    'x-company-id': companyId,
-    'x-user-id': userId
-  }
-})
-.then(res => res.json())
-.then(items => {
+Promise.all([
+  fetch(`${API_BASE}/stock?limit=10000`, {
+    headers: {
+      'x-company-id': companyId,
+      'x-user-id': userId
+    }
+  }).then(res => res.json()),
+
+  fetch(`${API_BASE}/items`, {
+    headers: {
+      'x-company-id': companyId,
+      'x-user-id': userId
+    }
+  }).then(res => res.json())
+])
+.then(([stockRows, items]) => {
+
+  const stockMap = {};
+  stockRows.forEach(r => {
+    stockMap[r.item_code] = r.stock_qty;
+  });
+
   const tbody = document.querySelector('#itemsTable tbody');
   tbody.innerHTML = '';
   allRows = [];
@@ -216,6 +211,9 @@ fetch(`${API_BASE}/items`, {
     tbody.appendChild(tr);
     allRows.push(tr);
   });
+})
+.catch(err => {
+  console.error('Failed to load stock/items', err);
 });
 
 /* ======================
