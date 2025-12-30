@@ -4,43 +4,18 @@
   <meta charset="UTF-8" />
   <title>TallyInsight Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f6f7f9;
       padding: 30px;
     }
+
     h2, h3 {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 8px;
-      font-size: 14px;
-    }
-    th {
-      background: #f1f5f9;
-      text-align: left;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 6px 10px;
-      margin-right: 4px;
-      cursor: pointer;
-    }
-    .edit { background: #2563eb; color: white; border: none; }
-    .save { background: #16a34a; color: white; border: none; }
-    .disabled { opacity: 0.5; cursor: not-allowed; }
-    .error { color: #dc2626; font-size: 12px; }
+
     .section {
       background: white;
       padding: 20px;
@@ -48,57 +23,132 @@
       margin-bottom: 30px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
-    .excel-tools {
-      margin-top: 10px;
+
+    input[type="text"] {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
     }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1f5f9;
+      text-align: left;
+    }
+
+    button {
+      padding: 6px 10px;
+      margin-right: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: none;
+    }
+
+    .edit {
+      background: #2563eb;
+      color: white;
+    }
+
+    .save {
+      background: #16a34a;
+      color: white;
+    }
+
+    .disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .error {
+      color: #dc2626;
+      font-size: 12px;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #374151;
+      padding: 6px 0;
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
+    }
+
     pre {
       background: #f1f5f9;
       padding: 10px;
       font-size: 12px;
       margin-top: 10px;
     }
+
     .logout {
       background: #dc2626;
       color: white;
       border: none;
-      margin-top: 20px;
+      padding: 8px 14px;
     }
   </style>
 </head>
 <body>
 
-  <!-- 🔹 PRIMARY: Item Image Manager -->
-  <div class="section">
-    <h2>Item Image Manager</h2>
-    <table id="itemsTable">
-      <thead>
-        <tr>
-          <th>Item Code</th>
-          <th>Item Name</th>
-          <th>Image URL</th>
-          <th>Action</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<!-- =========================
+     PRIMARY: ITEM IMAGE MANAGER
+========================= -->
+<div class="section">
+  <h2>Item Image Manager</h2>
 
-  <!-- 🔹 SECONDARY: Excel Tools -->
-  <div class="section">
-    <h3>Bulk Update (Excel – Optional)</h3>
+  <input
+    type="text"
+    id="searchBox"
+    placeholder="Search by item code or name..."
+  />
+
+  <table id="itemsTable">
+    <thead>
+      <tr>
+        <th>Item Code</th>
+        <th>Item Name</th>
+        <th>Stock</th>
+        <th>Image URL</th>
+        <th>Action</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- =========================
+     SECONDARY: EXCEL TOOLS
+========================= -->
+<div class="section" style="max-width:420px; margin-left:auto;">
+  <details>
+    <summary>📦 Bulk Update (Excel – Advanced)</summary>
 
     <button onclick="downloadExcel()">Download Excel</button>
 
-    <div class="excel-tools">
+    <div style="margin-top:10px;">
       <input type="file" id="excelFile" accept=".xlsx" />
       <button onclick="uploadExcel()">Upload Excel</button>
     </div>
 
     <pre id="result"></pre>
-  </div>
+  </details>
+</div>
 
-  <button class="logout" onclick="logout()">Logout</button>
+<button class="logout" onclick="logout()">Logout</button>
 
 <script>
 const API_BASE = 'https://tallyinsight-backend-1.onrender.com';
@@ -111,8 +161,29 @@ if (!companyId || !userId) {
 }
 
 /* ======================
-   ITEM TABLE
+   LOAD STOCK (READ ONLY)
 ====================== */
+let stockMap = {};
+
+fetch(`${API_BASE}/stock?limit=10000`, {
+  headers: {
+    'x-company-id': companyId,
+    'x-user-id': userId
+  }
+})
+.then(res => res.json())
+.then(rows => {
+  rows.forEach(r => {
+    stockMap[r.item_code] = r.stock_qty;
+  });
+})
+.catch(() => stockMap = {});
+
+/* ======================
+   LOAD ITEMS
+====================== */
+let allRows = [];
+
 fetch(`${API_BASE}/items`, {
   headers: {
     'x-company-id': companyId,
@@ -122,15 +193,18 @@ fetch(`${API_BASE}/items`, {
 .then(res => res.json())
 .then(items => {
   const tbody = document.querySelector('#itemsTable tbody');
+  tbody.innerHTML = '';
+  allRows = [];
+
   items.forEach(item => {
     const tr = document.createElement('tr');
+    const stockQty = stockMap[item.item_code] ?? 0;
 
     tr.innerHTML = `
       <td>${item.item_code}</td>
       <td>${item.item_name}</td>
-      <td>
-        <input type="text" value="${item.image_url || ''}" disabled />
-      </td>
+      <td>${stockQty}</td>
+      <td><input type="text" value="${item.image_url || ''}" disabled /></td>
       <td>
         <button class="edit">Edit</button>
         <button class="save disabled" disabled>Save</button>
@@ -138,54 +212,75 @@ fetch(`${API_BASE}/items`, {
       <td class="status"></td>
     `;
 
-    const input = tr.querySelector('input');
-    const editBtn = tr.querySelector('.edit');
-    const saveBtn = tr.querySelector('.save');
-    const status = tr.querySelector('.status');
-    const originalValue = input.value;
+    wireRow(tr, item);
+    tbody.appendChild(tr);
+    allRows.push(tr);
+  });
+});
 
-    editBtn.onclick = () => {
+/* ======================
+   ROW LOGIC
+====================== */
+function wireRow(tr, item) {
+  const input = tr.querySelector('input');
+  const editBtn = tr.querySelector('.edit');
+  const saveBtn = tr.querySelector('.save');
+  const status = tr.querySelector('.status');
+
+  editBtn.onclick = () => {
+    input.disabled = false;
+    saveBtn.disabled = false;
+    saveBtn.classList.remove('disabled');
+    editBtn.disabled = true;
+    status.textContent = '';
+  };
+
+  saveBtn.onclick = () => {
+    const newUrl = input.value.trim();
+
+    if (!newUrl || !/^https?:\/\//i.test(newUrl)) {
+      status.innerHTML = '<span class="error">Invalid URL</span>';
+      return;
+    }
+
+    saveBtn.disabled = true;
+    input.disabled = true;
+
+    fetch(`${API_BASE}/items/${item.item_code}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-company-id': companyId,
+        'x-user-id': userId
+      },
+      body: JSON.stringify({ image_url: newUrl })
+    })
+    .then(res => res.ok ? res.json() : res.json().then(e => Promise.reject(e)))
+    .then(() => {
+      editBtn.disabled = false;
+      saveBtn.classList.add('disabled');
+      status.textContent = '';
+    })
+    .catch(err => {
       input.disabled = false;
       saveBtn.disabled = false;
-      saveBtn.classList.remove('disabled');
-      editBtn.disabled = true;
-      status.textContent = '';
-    };
+      status.innerHTML =
+        `<span class="error">${err.error || 'Update failed'}</span>`;
+    });
+  };
+}
 
-    saveBtn.onclick = () => {
-      const newUrl = input.value.trim();
+/* ======================
+   SEARCH FILTER
+====================== */
+document.getElementById('searchBox').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
 
-      if (!newUrl || !/^https?:\/\//i.test(newUrl)) {
-        status.innerHTML = '<span class="error">Invalid URL</span>';
-        return;
-      }
-
-      saveBtn.disabled = true;
-      input.disabled = true;
-
-      fetch(`${API_BASE}/items/${item.item_code}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-company-id': companyId,
-          'x-user-id': userId
-        },
-        body: JSON.stringify({ image_url: newUrl })
-      })
-      .then(res => res.ok ? res.json() : res.json().then(e => Promise.reject(e)))
-      .then(() => {
-        editBtn.disabled = false;
-        saveBtn.classList.add('disabled');
-        status.textContent = '';
-      })
-      .catch(err => {
-        input.disabled = false;
-        saveBtn.disabled = false;
-        status.innerHTML = `<span class="error">${err.error || 'Update failed'}</span>`;
-      });
-    };
-
-    tbody.appendChild(tr);
+  allRows.forEach(row => {
+    const code = row.children[0].textContent.toLowerCase();
+    const name = row.children[1].textContent.toLowerCase();
+    row.style.display =
+      code.includes(q) || name.includes(q) ? '' : 'none';
   });
 });
 
@@ -237,5 +332,6 @@ function logout() {
   window.location.href = 'index.html';
 }
 </script>
+
 </body>
 </html>
