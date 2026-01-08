@@ -166,7 +166,7 @@ if (!companyId || !userId) {
 let allRows = [];
 
 Promise.all([
-  fetch(`${API_BASE}/stock?limit=10000`, {
+  fetch(`${API_BASE}/stock/active`, {
     headers: {
       'x-company-id': companyId,
       'x-user-id': userId
@@ -180,14 +180,14 @@ Promise.all([
     }
   }).then(res => res.json())
 ])
+
 .then(([stockRows, items]) => {
 
-  const stockMap = {};
-  stockRows.forEach(r => {
-    if (r.item_code) {
-      stockMap[r.item_code] = r.stock_qty;
-    }
-  });
+const stockMap = {};
+stockRows.forEach(r => {
+  stockMap[r.item_id] = r.stock_qty;
+});
+
 
   const tbody = document.querySelector('#itemsTable tbody');
   tbody.innerHTML = '';
@@ -195,7 +195,7 @@ Promise.all([
 
   items.forEach(item => {
     const tr = document.createElement('tr');
-    const stockQty = stockMap[item.item_code] ?? 0;
+    const stockQty = stockMap[item.item_id] ?? 0;
 
     tr.innerHTML = `
       <td>${item.item_code || ''}</td>
