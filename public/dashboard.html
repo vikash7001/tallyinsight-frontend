@@ -161,7 +161,7 @@ if (!companyId || !userId) {
 }
 
 /* ======================
-   LOAD STOCK (READ ONLY)
+   LOAD STOCK & ITEMS
 ====================== */
 let allRows = [];
 
@@ -184,7 +184,9 @@ Promise.all([
 
   const stockMap = {};
   stockRows.forEach(r => {
-    stockMap[r.item_code] = r.stock_qty;
+    if (r.item_code) {
+      stockMap[r.item_code] = r.stock_qty;
+    }
   });
 
   const tbody = document.querySelector('#itemsTable tbody');
@@ -196,7 +198,7 @@ Promise.all([
     const stockQty = stockMap[item.item_code] ?? 0;
 
     tr.innerHTML = `
-      <td>${item.item_code}</td>
+      <td>${item.item_code || ''}</td>
       <td>${item.item_name}</td>
       <td>${stockQty}</td>
       <td><input type="text" value="${item.image_url || ''}" disabled /></td>
@@ -206,9 +208,9 @@ Promise.all([
       </td>
       <td class="status"></td>
     `;
-tr.dataset.itemId = item.item_id;
 
-    wireRow(tr, item);
+    tr.dataset.itemId = item.item_id;
+    wireRow(tr);
     tbody.appendChild(tr);
     allRows.push(tr);
   });
@@ -220,7 +222,7 @@ tr.dataset.itemId = item.item_id;
 /* ======================
    ROW LOGIC
 ====================== */
-function wireRow(tr, item) {
+function wireRow(tr) {
   const input = tr.querySelector('input');
   const editBtn = tr.querySelector('.edit');
   const saveBtn = tr.querySelector('.save');
@@ -233,39 +235,39 @@ function wireRow(tr, item) {
     editBtn.disabled = true;
     status.textContent = '';
   };
-saveBtn.onclick = () => {
-  const newUrl = input.value.trim();
-  const itemId = tr.dataset.itemId;
 
-  fetch(`${API_BASE}/items/by-id/${itemId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-company-id': companyId,
-      'x-user-id': userId
-    },
-    body: JSON.stringify({ image_url: newUrl })
-  })
-  .then(res => res.ok ? res.json() : Promise.reject())
-  .then(() => {
-    editBtn.disabled = false;
-    saveBtn.classList.add('disabled');
-    status.textContent = '';
-  })
-  .catch(err => {
-    input.disabled = false;
-    saveBtn.disabled = false;
-    status.innerHTML = `<span class="error">Update failed</span>`;
-  });
-};
+  saveBtn.onclick = () => {
+    const newUrl = input.value.trim();
+    const itemId = tr.dataset.itemId;
 
+    fetch(`${API_BASE}/items/by-id/${itemId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-company-id': companyId,
+        'x-user-id': userId
+      },
+      body: JSON.stringify({ image_url: newUrl })
+    })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(() => {
+      input.disabled = true;
+      editBtn.disabled = false;
+      saveBtn.classList.add('disabled');
+      saveBtn.disabled = true;
+      status.textContent = '';
+    })
+    .catch(() => {
+      status.innerHTML = '<span class="error">Update failed</span>';
+    });
+  };
+}
 
 /* ======================
-   SEARCH FILTER
+   SEARCH
 ====================== */
 document.getElementById('searchBox').addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
-
   allRows.forEach(row => {
     const code = row.children[0].textContent.toLowerCase();
     const name = row.children[1].textContent.toLowerCase();
@@ -275,53 +277,14 @@ document.getElementById('searchBox').addEventListener('input', e => {
 });
 
 /* ======================
-   EXCEL (UNCHANGED)
+   LOGOUT
 ====================== */
-function downloadExcel() {
-  fetch(`${API_BASE}/admin/items/excel`, {
-    headers: {
-      'x-company-id': companyId,
-      'x-user-id': userId
-    }
-  })
-  .then(res => res.blob())
-  .then(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'item_images.xlsx';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-function uploadExcel() {
-  const file = document.getElementById('excelFile').files[0];
-  if (!file) return alert('Select Excel file');
-
-  const fd = new FormData();
-  fd.append('file', file);
-
-  fetch(`${API_BASE}/admin/items/excel`, {
-    method: 'POST',
-    headers: {
-      'x-company-id': companyId,
-      'x-user-id': userId
-    },
-    body: fd
-  })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById('result').textContent =
-      JSON.stringify(data, null, 2);
-  });
-}
-
 function logout() {
   localStorage.clear();
   window.location.href = 'index.html';
 }
 </script>
+
 
 </body>
 </html>
