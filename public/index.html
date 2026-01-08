@@ -2,83 +2,131 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TallyInsight Admin</title>
+  <title>TallyInsight – Business Sync Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f6f7f9;
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f8fafc, #eef2f7);
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      color: #1f2937;
     }
-    .card {
+
+    .container {
       background: white;
-      padding: 24px;
-      width: 320px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 460px;
+      padding: 36px 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
-    h2 {
-      margin-bottom: 16px;
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
       text-align: center;
     }
-    label {
+
+    .tagline {
       font-size: 14px;
-      display: block;
-      margin-top: 12px;
+      color: #4b5563;
+      text-align: center;
+      margin-bottom: 28px;
     }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      box-sizing: border-box;
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 26px;
     }
+
     button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      background: #2563eb;
-      color: white;
+      flex: 1;
+      padding: 12px 0;
+      font-size: 15px;
+      border-radius: 6px;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
-    button:hover {
+
+    .signup {
+      background: #2563eb;
+      color: white;
+    }
+
+    .signup:hover {
       background: #1e40af;
+    }
+
+    .login {
+      background: #f1f5f9;
+      color: #1f2937;
+      border: 1px solid #e5e7eb;
+    }
+
+    .login:hover {
+      background: #e5e7eb;
+    }
+
+    .trust {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 18px;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .trust ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .trust li {
+      margin-bottom: 8px;
+    }
+
+    footer {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h2>TallyInsight Admin</h2>
 
-    <label for="companyId">Company ID</label>
-    <input id="companyId" type="text" placeholder="Company UUID" />
+  <div class="container">
+    <h1>TallyInsight</h1>
+    <div class="tagline">
+      Sync your Tally data securely. Manage items and images. Enable Android access for your team.
+    </div>
 
-    <label for="userId">Admin User ID</label>
-    <input id="userId" type="text" placeholder="admin" />
+    <div class="actions">
+      <button class="signup" onclick="location.href='signup.html'">
+        Sign up
+      </button>
+      <button class="login" onclick="location.href='login.html'">
+        Login
+      </button>
+    </div>
 
-    <button onclick="login()">Continue</button>
+    <div class="trust">
+      <ul>
+        <li>✔ Works with Tally via secure local agent</li>
+        <li>✔ One company, controlled access</li>
+        <li>✔ Android-only access for staff users</li>
+      </ul>
+    </div>
+
+    <footer>
+      © TallyInsight. All rights reserved.
+    </footer>
   </div>
 
-  <script>
-    function login() {
-      const companyId = document.getElementById('companyId').value.trim();
-      const userId = document.getElementById('userId').value.trim();
-
-      if (!companyId || !userId) {
-        alert('Both fields are required');
-        return;
-      }
-
-      localStorage.setItem('x-company-id', companyId);
-      localStorage.setItem('x-user-id', userId);
-
-      // dashboard page will be added next
-      window.location.href = 'dashboard.html';
-    }
-  </script>
 </body>
 </html>
