@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TallyInsight – Choose Plan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">TallyInsight</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container" style="max-width:720px;">
+    <h1>Select your plan</h1>
+    <p style="color:var(--text-muted); margin-bottom:32px;">
+      You can change your plan later. No payment required to start the trial.
+    </p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+      <!-- TRIAL -->
+      <div class="card">
+        <h2>Free Trial</h2>
+        <p>
+          Try all core features for a limited time.
+        </p>
+        <ul style="font-size:14px;">
+          <li>✔ Sync one Tally company</li>
+          <li>✔ View stock on Android</li>
+          <li>✔ Manage item images</li>
+        </ul>
+
+        <button
+          class="btn btn-primary"
+          style="width:100%; margin-top:16px;"
+          onclick="selectPlan('trial')"
+        >
+          Start Free Trial
+        </button>
+      </div>
+
+      <!-- PAID -->
+      <div class="card">
+        <h2>Paid Plan</h2>
+        <p>
+          Unlock full access and long-term usage.
+        </p>
+        <ul style="font-size:14px;">
+          <li>✔ Unlimited sync</li>
+          <li>✔ Priority support</li>
+          <li>✔ No trial limits</li>
+        </ul>
+
+        <button
+          class="btn btn-outline"
+          style="width:100%; margin-top:16px;"
+          onclick="selectPlan('paid')"
+        >
+          Buy Subscription
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  © TallyInsight
+</footer>
+
+</div>
+
+<script>
+function selectPlan(plan) {
+  // store choice for next step
+  localStorage.setItem('subscription_plan', plan);
+
+  // move to company creation
+  window.location.href = 'company-create.html';
+}
+</script>
+
+</body>
+</html>

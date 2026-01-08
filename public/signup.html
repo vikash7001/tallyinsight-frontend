@@ -123,7 +123,7 @@ function verifyOtp() {
     localStorage.setItem('x-user-role', data.role);
 
     // next step (company creation later)
-    window.location.href = 'company-create.html';
+    window.location.href = 'subscription.html';
   })
   .catch(() => showError('Invalid or expired OTP'));
 }
