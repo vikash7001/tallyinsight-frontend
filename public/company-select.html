@@ -1,72 +1,72 @@
-!DOCTYPE html
-html lang=en
-head
-  meta charset=UTF-8 
-  titleSelect Company – TallyInsighttitle
-  meta name=viewport content=width=device-width, initial-scale=1.0 
-  link rel=stylesheet href=styles.css 
-head
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select Company – TallyInsight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
 
-body
-div class=page
+<body>
+<div class="page">
 
-  header
-    div class=container header-inner
-      div class=logoTallyInsightdiv
-    div
-  header
+  <header>
+    <div class="container header-inner">
+      <div class="logo">TallyInsight</div>
+    </div>
+  </header>
 
-  section class=hero
-    div class=container style=max-width600px;
-      h1 style=font-size28px;Select Companyh1
-      p style=font-size14px; colorvar(--text-muted); margin-bottom24px;
+  <section class="hero">
+    <div class="container" style="max-width:600px;">
+      <h1 style="font-size:28px;">Select Company</h1>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px;">
         Choose a company to continue.
-      p
+      </p>
 
-      div id=companyListdiv
-      div id=error style=margin-top16px; color#dc2626;div
-    div
-  section
+      <div id="companyList"></div>
+      <div id="error" style="margin-top:16px; color:#dc2626;"></div>
+    </div>
+  </section>
 
-  footer© TallyInsightfooter
-div
+  <footer>© TallyInsight</footer>
+</div>
 
-script
-const API = 'httpstallyinsight-backend-1.onrender.com';
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
 const adminId = localStorage.getItem('x-user-id');
 
 if (!adminId) {
-  window.location.href = 'login.html';
+  window.location.href = '/login.html';
 }
 
-fetch(`${API}admincompanies`, {
-  headers { 'x-admin-id' adminId }
+fetch(`${API}/admin/companies`, {
+  headers: { 'x-admin-id': adminId }
 })
-.then(r = r.ok  r.json()  Promise.reject())
-.then(companies = {
+.then(r => r.ok ? r.json() : Promise.reject())
+.then(companies => {
   if (!companies.length) {
     document.getElementById('error').textContent = 'No companies found';
     return;
   }
 
   const list = document.getElementById('companyList');
-  companies.forEach(c = {
+  companies.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'btn btn-outline';
     btn.style.width = '100%';
     btn.style.marginBottom = '12px';
     btn.textContent = c.company_name;
-    btn.onclick = () = {
+    btn.onclick = () => {
       localStorage.setItem('x-company-id', c.company_id);
-      window.location.href = 'dashboard.html';
+      window.location.href = '/dashboard.html';
     };
     list.appendChild(btn);
   });
 })
-.catch(() = {
+.catch(() => {
   document.getElementById('error').textContent = 'Failed to load companies';
 });
-script
+</script>
 
-body
-html
+</body>
+</html>
