@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TallyInsight – Sign up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">TallyInsight</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container" style="max-width:420px;">
+    <h1>Create your account</h1>
+    <p style="font-size:14px; color:var(--text-muted);">
+      Start your free trial. No payment required.
+    </p>
+
+    <!-- MOBILE -->
+    <label>Mobile Number</label>
+    <input id="mobile" type="text" placeholder="10-digit mobile" />
+
+    <!-- EMAIL -->
+    <label>Email</label>
+    <input id="email" type="email" placeholder="you@company.com" />
+
+    <button
+      id="sendOtpBtn"
+      class="btn btn-primary"
+      style="width:100%; margin-top:16px;"
+      onclick="requestOtp()"
+    >
+      Send OTP
+    </button>
+
+    <!-- OTP -->
+    <div id="otpBox" style="display:none; margin-top:20px;">
+      <label>OTP</label>
+      <input id="otp" type="text" placeholder="Enter OTP" />
+
+      <button
+        class="btn btn-outline"
+        style="width:100%; margin-top:12px;"
+        onclick="verifyOtp()"
+      >
+        Verify & Continue
+      </button>
+    </div>
+
+    <div id="error" style="margin-top:16px; color:#dc2626;"></div>
+  </div>
+</section>
+
+<footer>© TallyInsight</footer>
+</div>
+
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
+
+let signupId = null;
+
+function showError(msg) {
+  document.getElementById('error').textContent = msg;
+}
+
+function requestOtp() {
+  const mobile = document.getElementById('mobile').value.trim();
+  const email = document.getElementById('email').value.trim();
+
+  if (!/^\d{10}$/.test(mobile)) {
+    return showError('Enter valid 10-digit mobile number');
+  }
+
+  if (!email) {
+    return showError('Email is required');
+  }
+
+  fetch(`${API}/signup/otp/request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mobile, email })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(data => {
+    signupId = data.signup_id;
+    document.getElementById('otpBox').style.display = 'block';
+    document.getElementById('sendOtpBtn').disabled = true;
+    showError('');
+  })
+  .catch(() => showError('Signup failed or already registered'));
+}
+
+function verifyOtp() {
+  const otp = document.getElementById('otp').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const email = document.getElementById('email').value.trim();
+
+  if (!otp) {
+    return showError('Enter OTP');
+  }
+
+  fetch(`${API}/signup/otp/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      signup_id: signupId,
+      otp,
+      mobile,
+      email
+    })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(data => {
+    // store identity
+    localStorage.setItem('x-user-id', data.user_id);
+    localStorage.setItem('x-user-role', data.role);
+
+    // next step (company creation later)
+    window.location.href = 'company-create.html';
+  })
+  .catch(() => showError('Invalid or expired OTP'));
+}
+</script>
+
+</body>
+</html>
