@@ -206,6 +206,7 @@ Promise.all([
       </td>
       <td class="status"></td>
     `;
+tr.dataset.itemId = item.item_id;
 
     wireRow(tr, item);
     tbody.appendChild(tr);
@@ -232,41 +233,32 @@ function wireRow(tr, item) {
     editBtn.disabled = true;
     status.textContent = '';
   };
+saveBtn.onclick = () => {
+  const newUrl = input.value.trim();
+  const itemId = tr.dataset.itemId;
 
-  saveBtn.onclick = () => {
-    const newUrl = input.value.trim();
+  fetch(`${API_BASE}/items/by-id/${itemId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-company-id': companyId,
+      'x-user-id': userId
+    },
+    body: JSON.stringify({ image_url: newUrl })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(() => {
+    editBtn.disabled = false;
+    saveBtn.classList.add('disabled');
+    status.textContent = '';
+  })
+  .catch(err => {
+    input.disabled = false;
+    saveBtn.disabled = false;
+    status.innerHTML = `<span class="error">Update failed</span>`;
+  });
+};
 
-    if (!newUrl || !/^https?:\/\//i.test(newUrl)) {
-      status.innerHTML = '<span class="error">Invalid URL</span>';
-      return;
-    }
-
-    saveBtn.disabled = true;
-    input.disabled = true;
-
-    fetch(`${API_BASE}/items/${item.item_code}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-company-id': companyId,
-        'x-user-id': userId
-      },
-      body: JSON.stringify({ image_url: newUrl })
-    })
-    .then(res => res.ok ? res.json() : res.json().then(e => Promise.reject(e)))
-    .then(() => {
-      editBtn.disabled = false;
-      saveBtn.classList.add('disabled');
-      status.textContent = '';
-    })
-    .catch(err => {
-      input.disabled = false;
-      saveBtn.disabled = false;
-      status.innerHTML =
-        `<span class="error">${err.error || 'Update failed'}</span>`;
-    });
-  };
-}
 
 /* ======================
    SEARCH FILTER
