@@ -1,0 +1,139 @@
+/* =========================
+   TallyInsight – Base Styles
+========================= */
+
+:root {
+  --bg-main: #f5f7fb;
+  --bg-white: #ffffff;
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --text-main: #1f2937;
+  --text-muted: #4b5563;
+  --border-light: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ===== Layout ===== */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== Header ===== */
+header {
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-outline {
+  background: white;
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+}
+
+.btn-outline:hover {
+  background: #f1f5f9;
+}
+
+/* ===== Hero ===== */
+.hero {
+  padding: 80px 0 60px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: 34px;
+  margin-bottom: 14px;
+}
+
+.hero p {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+}
+
+/* ===== Trust Section ===== */
+.trust {
+  background: var(--bg-white);
+  border-top: 1px solid var(--border-light);
+  padding: 40px 0;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  font-size: 14px;
+}
+
+.trust-item {
+  color: var(--text-muted);
+}
+
+/* ===== Footer ===== */
+footer {
+  margin-top: auto;
+  padding: 20px 0;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+}

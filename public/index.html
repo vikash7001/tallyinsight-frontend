@@ -2,131 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TallyInsight – Business Sync Platform</title>
+  <title>TallyInsight</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #f8fafc, #eef2f7);
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #1f2937;
-    }
-
-    .container {
-      background: white;
-      width: 460px;
-      padding: 36px 40px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      font-size: 26px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .tagline {
-      font-size: 14px;
-      color: #4b5563;
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 26px;
-    }
-
-    button {
-      flex: 1;
-      padding: 12px 0;
-      font-size: 15px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .signup {
-      background: #2563eb;
-      color: white;
-    }
-
-    .signup:hover {
-      background: #1e40af;
-    }
-
-    .login {
-      background: #f1f5f9;
-      color: #1f2937;
-      border: 1px solid #e5e7eb;
-    }
-
-    .login:hover {
-      background: #e5e7eb;
-    }
-
-    .trust {
-      border-top: 1px solid #e5e7eb;
-      padding-top: 18px;
-      font-size: 13px;
-      color: #374151;
-    }
-
-    .trust ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .trust li {
-      margin-bottom: 8px;
-    }
-
-    footer {
-      margin-top: 22px;
-      text-align: center;
-      font-size: 12px;
-      color: #6b7280;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
+<div class="page">
 
-  <div class="container">
-    <h1>TallyInsight</h1>
-    <div class="tagline">
-      Sync your Tally data securely. Manage items and images. Enable Android access for your team.
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="container header-inner">
+      <div class="logo">TallyInsight</div>
+      <div>
+        <button class="btn btn-outline" onclick="location.href='login.html'">Login</button>
+      </div>
     </div>
+  </header>
 
-    <div class="actions">
-      <button class="signup" onclick="location.href='signup.html'">
-        Sign up
-      </button>
-      <button class="login" onclick="location.href='login.html'">
-        Login
-      </button>
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <h1>Bring Your Tally Data to Life</h1>
+        <p>
+          Securely sync your Tally company using a local agent,
+          manage item images, and give controlled Android access
+          to your staff — without sharing your Tally system.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="location.href='signup.html'">
+            Sign up
+          </button>
+          <button class="btn btn-outline" onclick="location.href='login.html'">
+            Login
+          </button>
+        </div>
+      </div>
+
+      <!-- Visual placeholder (future illustration / graphic) -->
+      <div>
+        <div style="
+          background:#eaf0ff;
+          height:260px;
+          border-radius:12px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:#64748b;
+          font-size:14px;">
+          Secure Tally Sync Visualization
+        </div>
+      </div>
     </div>
+  </section>
 
-    <div class="trust">
-      <ul>
-        <li>✔ Works with Tally via secure local agent</li>
-        <li>✔ One company, controlled access</li>
-        <li>✔ Android-only access for staff users</li>
-      </ul>
+  <!-- ===== Trust ===== -->
+  <section class="trust">
+    <div class="container trust-grid">
+      <div class="trust-item">✔ Works with Tally via secure local agent</div>
+      <div class="trust-item">✔ One company, role-based access</div>
+      <div class="trust-item">✔ Android-only access for non-admin users</div>
     </div>
+  </section>
 
-    <footer>
-      © TallyInsight. All rights reserved.
-    </footer>
-  </div>
+  <!-- ===== Footer ===== -->
+  <footer>
+    © TallyInsight. All rights reserved.
+  </footer>
 
+</div>
 </body>
 </html>
