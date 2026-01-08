@@ -13,7 +13,7 @@
     }
 
     h2, h3 {
-      margin-bottom: 12px;
+      margin-bottom: 6px;
     }
 
     .section {
@@ -75,24 +75,6 @@
       font-size: 12px;
     }
 
-    details summary {
-      cursor: pointer;
-      font-weight: bold;
-      color: #374151;
-      padding: 6px 0;
-    }
-
-    details[open] summary {
-      margin-bottom: 10px;
-    }
-
-    pre {
-      background: #f1f5f9;
-      padding: 10px;
-      font-size: 12px;
-      margin-top: 10px;
-    }
-
     .logout {
       background: #dc2626;
       color: white;
@@ -108,6 +90,11 @@
 ========================= -->
 <div class="section">
   <h2>Item Image Manager</h2>
+
+  <!-- ✅ LAST SYNC -->
+  <div id="lastSync" style="margin-bottom:10px; color:#6b7280; font-size:13px;">
+    Last sync: —
+  </div>
 
   <input
     type="text"
@@ -161,6 +148,30 @@ if (!companyId || !userId) {
 }
 
 /* ======================
+   LAST SYNC INDICATOR
+====================== */
+fetch(`${API_BASE}/sync/last`, {
+  headers: {
+    'x-company-id': companyId,
+    'x-user-id': userId
+  }
+})
+.then(res => res.ok ? res.json() : Promise.reject())
+.then(({ last_sync_at }) => {
+  const el = document.getElementById('lastSync');
+  if (!last_sync_at) {
+    el.textContent = 'Last sync: never';
+    return;
+  }
+  const d = new Date(last_sync_at);
+  el.textContent = 'Last sync: ' + d.toLocaleString();
+})
+.catch(() => {
+  document.getElementById('lastSync').textContent =
+    'Last sync: unavailable';
+});
+
+/* ======================
    LOAD STOCK & ITEMS
 ====================== */
 let allRows = [];
@@ -180,14 +191,12 @@ Promise.all([
     }
   }).then(res => res.json())
 ])
-
 .then(([stockRows, items]) => {
 
-const stockMap = {};
-stockRows.forEach(r => {
-  stockMap[r.item_id] = r.stock_qty;
-});
-
+  const stockMap = {};
+  stockRows.forEach(r => {
+    stockMap[r.item_id] = r.stock_qty;
+  });
 
   const tbody = document.querySelector('#itemsTable tbody');
   tbody.innerHTML = '';
@@ -284,7 +293,6 @@ function logout() {
   window.location.href = 'index.html';
 }
 </script>
-
 
 </body>
 </html>
