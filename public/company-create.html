@@ -1,0 +1,34 @@
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
+
+function createCompany() {
+  const name = document.getElementById('company').value.trim();
+  const adminId = localStorage.getItem('x-user-id');
+  const plan = localStorage.getItem('subscription_plan');
+
+  if (!name) {
+    document.getElementById('error').textContent = 'Enter company name';
+    return;
+  }
+
+  fetch(`${API}/companies/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': adminId
+    },
+    body: JSON.stringify({
+      company_name: name,
+      plan: plan
+    })
+  })
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(data => {
+    localStorage.setItem('x-company-id', data.company_id);
+    window.location.href = 'company-select.html';
+  })
+  .catch(() => {
+    document.getElementById('error').textContent = 'Company creation failed';
+  });
+}
+</script>
