@@ -1,3 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Company</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">TallyInsight</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container" style="max-width:420px;">
+    <h1>Create your company</h1>
+
+    <label>Company Name</label>
+    <input
+      id="company"
+      type="text"
+      placeholder="Enter company name"
+    />
+
+    <button
+      class="btn btn-primary"
+      style="width:100%; margin-top:16px;"
+      onclick="createCompany()"
+    >
+      Continue
+    </button>
+
+    <div
+      id="error"
+      style="margin-top:12px; color:#dc2626;"
+    ></div>
+  </div>
+</section>
+
+<footer>© TallyInsight</footer>
+
+</div>
+
 <script>
 const API = 'https://tallyinsight-backend-1.onrender.com';
 
@@ -5,6 +53,16 @@ function createCompany() {
   const name = document.getElementById('company').value.trim();
   const adminId = localStorage.getItem('x-user-id');
   const plan = localStorage.getItem('subscription_plan');
+
+  if (!adminId) {
+    document.getElementById('error').textContent = 'Missing admin session';
+    return;
+  }
+
+  if (!plan) {
+    document.getElementById('error').textContent = 'Missing subscription plan';
+    return;
+  }
 
   if (!name) {
     document.getElementById('error').textContent = 'Enter company name';
@@ -22,13 +80,18 @@ function createCompany() {
       plan: plan
     })
   })
-  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(res => res.ok ? res.json() : res.json().then(e => Promise.reject(e)))
   .then(data => {
     localStorage.setItem('x-company-id', data.company_id);
     window.location.href = 'company-select.html';
   })
-  .catch(() => {
-    document.getElementById('error').textContent = 'Company creation failed';
+  .catch(err => {
+    console.error(err);
+    document.getElementById('error').textContent =
+      err?.error || 'Company creation failed';
   });
 }
 </script>
+
+</body>
+</html>
