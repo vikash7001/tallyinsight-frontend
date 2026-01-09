@@ -83,7 +83,7 @@ function createCompany() {
   .then(res => res.ok ? res.json() : res.json().then(e => Promise.reject(e)))
   .then(data => {
     localStorage.setItem('x-company-id', data.company_id);
-    window.location.href = 'company-select.html';
+window.location.href = 'agent-install.html';
   })
   .catch(err => {
     console.error(err);
