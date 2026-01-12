@@ -1,3 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Company – TallyInsight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">TallyInsight</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container" style="max-width:420px;">
+    <h1>Create your company</h1>
+
+    <label>Company Name</label>
+    <input
+      id="company"
+      type="text"
+      placeholder="Enter company name"
+    />
+
+    <button
+      class="btn btn-primary"
+      style="width:100%; margin-top:16px;"
+      onclick="createCompany()"
+    >
+      Continue
+    </button>
+
+    <div
+      id="error"
+      style="margin-top:12px; color:#dc2626;"
+    ></div>
+  </div>
+</section>
+
+<footer>
+  © TallyInsight
+</footer>
+
+</div>
+
 <script>
 const API = 'https://tallyinsight-backend-1.onrender.com';
 
@@ -37,3 +87,6 @@ function createCompany() {
   });
 }
 </script>
+
+</body>
+</html>
