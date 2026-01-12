@@ -78,14 +78,35 @@
 </div>
 
 <script>
-function selectPlan(plan) {
-  // store choice for next step
-  localStorage.setItem('subscription_plan', plan);
+const API = 'https://tallyinsight-backend-1.onrender.com';
 
-  // move to company creation
-  window.location.href = 'company-create.html';
+const adminId = localStorage.getItem('x-user-id');
+const companyId = localStorage.getItem('x-company-id');
+
+if (!adminId || !companyId) {
+  window.location.href = 'signup.html';
+}
+
+function selectPlan(plan) {
+  fetch(`${API}/subscriptions/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': adminId,
+      'x-company-id': companyId
+    },
+    body: JSON.stringify({ plan })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(() => {
+    window.location.href = 'agent-install.html';
+  })
+  .catch(() => {
+    alert('Failed to activate subscription');
+  });
 }
 </script>
+
 
 </body>
 </html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TallyInsight – User Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<div class="page">
+
+<header>
+  <div class="container header-inner">
+    <div class="logo">TallyInsight</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container" style="max-width:420px;">
+    <h1>Your Details</h1>
+    <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">
+      Tell us a bit about yourself.
+    </p>
+
+    <label>Name</label>
+    <input id="name" type="text" placeholder="Your full name" />
+
+    <label>Address</label>
+    <input id="address" type="text" placeholder="Business address" />
+
+    <label>GST Number</label>
+    <input id="gst" type="text" placeholder="Optional" />
+
+    <button
+      class="btn btn-primary"
+      style="width:100%; margin-top:16px;"
+      onclick="saveDetails()"
+    >
+      Continue
+    </button>
+
+    <div id="error" style="margin-top:12px; color:#dc2626;"></div>
+  </div>
+</section>
+
+<footer>© TallyInsight</footer>
+</div>
+
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
+
+function saveDetails() {
+  const adminId = localStorage.getItem('x-user-id');
+  if (!adminId) {
+    document.getElementById('error').textContent = 'Session expired';
+    return;
+  }
+
+  const name = document.getElementById('name').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const gst = document.getElementById('gst').value.trim();
+
+  if (!name) {
+    document.getElementById('error').textContent = 'Name is required';
+    return;
+  }
+
+  fetch(`${API}/admin/profile`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-user-id': adminId
+    },
+    body: JSON.stringify({
+      name,
+      address,
+      gst_number: gst
+    })
+  })
+  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(() => {
+    window.location.href = 'company-create.html';
+  })
+  .catch(() => {
+    document.getElementById('error').textContent = 'Failed to save details';
+  });
+}
+</script>
+
+</body>
+</html>
