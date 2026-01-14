@@ -28,9 +28,7 @@
       <!-- TRIAL -->
       <div class="card">
         <h2>Free Trial</h2>
-        <p>
-          Try all core features for a limited time.
-        </p>
+        <p>Try all core features for a limited time.</p>
         <ul style="font-size:14px;">
           <li>✔ Sync one Tally company</li>
           <li>✔ View stock on Android</li>
@@ -49,9 +47,7 @@
       <!-- PAID -->
       <div class="card">
         <h2>Paid Plan</h2>
-        <p>
-          Unlock full access and long-term usage.
-        </p>
+        <p>Unlock full access and long-term usage.</p>
         <ul style="font-size:14px;">
           <li>✔ Unlimited sync</li>
           <li>✔ Priority support</li>
@@ -71,28 +67,32 @@
   </div>
 </section>
 
-<footer>
-  © TallyInsight
-</footer>
+<footer>© TallyInsight</footer>
 
 </div>
 
 <script>
 const API = 'https://tallyinsight-backend-1.onrender.com';
 
-const adminId = localStorage.getItem('x-user-id');
+const userId = localStorage.getItem('x-user-id');
 const companyId = localStorage.getItem('x-company-id');
 
-if (!adminId || !companyId) {
+/* =========================
+   IDENTITY GUARD
+========================= */
+if (!userId || !companyId) {
   window.location.href = 'signup.html';
 }
 
+/* =========================
+   PLAN SELECTION
+========================= */
 function selectPlan(plan) {
   fetch(`${API}/subscriptions/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-user-id': adminId,
+      'x-user-id': userId,
       'x-company-id': companyId
     },
     body: JSON.stringify({ plan })
@@ -106,7 +106,6 @@ function selectPlan(plan) {
   });
 }
 </script>
-
 
 </body>
 </html>

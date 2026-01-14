@@ -21,47 +21,48 @@
     <h1>Install TallyInsight Agent</h1>
 
     <p style="color:var(--text-muted); margin-bottom:24px;">
-      To connect your Tally data securely, you need to install our local agent.
+      To connect your Tally data securely, install the TallyInsight local agent.
       The agent runs on your computer and syncs data without exposing your Tally system.
     </p>
 
+    <!-- STEP 1 -->
     <div class="card">
       <h2>Step 1: Download Agent</h2>
 
-      <a
-        href="https://your-cdn.com/TallyInsightAgent.exe"
-        class="btn btn-primary"
-        style="margin-right:12px;"
-      >
-        Download EXE
-      </a>
+      <div style="margin-top:12px;">
+        <a
+          href="https://your-cdn.com/TallyInsightAgent.exe"
+          class="btn btn-primary"
+          style="margin-right:12px;"
+        >
+          Download EXE
+        </a>
 
-<a
-  href="https://drive.google.com/uc?export=download&id=1Vo61wC0IXLgtdSD1FpuzTqsnEP43ddHA"
-  class="btn btn-outline"
->
-  Download Agent ZIP
-</a>
-
-
-
-
+        <a
+          href="https://drive.google.com/uc?export=download&id=1Vo61wC0IXLgtdSD1FpuzTqsnEP43ddHA"
+          class="btn btn-outline"
+        >
+          Download ZIP
+        </a>
+      </div>
 
       <p style="font-size:14px; margin-top:12px;">
         Recommended: <strong>EXE</strong> for most users.
       </p>
     </div>
 
+    <!-- STEP 2 -->
     <div class="card" style="margin-top:24px;">
       <h2>Step 2: Run Agent</h2>
       <ol style="font-size:15px;">
-        <li>Close Tally if it’s open</li>
+        <li>Close Tally if it is open</li>
         <li>Right-click the downloaded file</li>
         <li>Select <strong>Run as Administrator</strong></li>
         <li>Open Tally</li>
       </ol>
     </div>
 
+    <!-- STEP 3 -->
     <div class="card" style="margin-top:24px;">
       <h2>Step 3: Sync Company</h2>
       <p>
@@ -72,28 +73,29 @@
       </p>
     </div>
 
+    <!-- AGENT STATUS (FUTURE) -->
     <div
       id="agent-status"
       class="card"
       style="margin-top:24px; display:none;"
     >
       <h2>Agent Status</h2>
-      <p id="status-text">Checking agent...</p>
+      <p id="status-text">Checking agent…</p>
     </div>
 
   </div>
 </section>
 
-<footer>
-  © TallyInsight
-</footer>
+<footer>© TallyInsight</footer>
 
 </div>
 
 <script>
 /*
-  Placeholder for next step:
-  Poll localhost to detect agent
+  Future enhancement:
+  - Poll localhost agent endpoint
+  - Detect running status
+  - Auto-advance onboarding
 */
 </script>
 
