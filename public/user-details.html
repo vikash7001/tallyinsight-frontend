@@ -51,9 +51,10 @@
 const API = 'https://tallyinsight-backend-1.onrender.com';
 
 function saveDetails() {
-  const adminId = localStorage.getItem('x-user-id');
-  if (!adminId) {
-    document.getElementById('error').textContent = 'Session expired';
+  const userId = localStorage.getItem('x-user-id');
+
+  if (!userId) {
+    document.getElementById('error').textContent = 'Session expired. Please login again.';
     return;
   }
 
@@ -70,7 +71,7 @@ function saveDetails() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-user-id': adminId
+      'x-user-id': userId
     },
     body: JSON.stringify({
       name,
@@ -78,12 +79,17 @@ function saveDetails() {
       gst_number: gst
     })
   })
-  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(res => {
+    if (!res.ok) throw new Error('Save failed');
+    return res.json();
+  })
   .then(() => {
     window.location.href = 'company-create.html';
   })
-  .catch(() => {
-    document.getElementById('error').textContent = 'Failed to save details';
+  .catch(err => {
+    console.error(err);
+    document.getElementById('error').textContent =
+      'Failed to save details. Please try again.';
   });
 }
 </script>
