@@ -2,97 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TallyInsight Dashboard</title>
+  <title>Dashboard – TallyInsight</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f6f7f9;
-      padding: 30px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-    .row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
-    .label { color:#6b7280; }
-    .value { font-weight:600; }
-    button {
-      padding: 10px 14px;
-      margin-right: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .primary { background:#2563eb; color:white; }
-    .secondary { background:#374151; color:white; }
-    .danger { background:#dc2626; color:white; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
+<div class="page">
 
-<!-- =========================
-     COMPANY INFO
-========================= -->
-<div class="card">
-  <h2>Company Overview</h2>
+  <!-- ===== Header ===== -->
+  <header>
+    <div class="container header-inner">
+      <div class="logo">TallyInsight</div>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-  <div class="row">
-    <div class="label">Company</div>
-    <div class="value" id="companyName">—</div>
-  </div>
+  <section class="hero">
+    <div class="container" style="max-width:800px;">
 
-  <div class="row">
-    <div class="label">Subscription</div>
-    <div class="value" id="subscriptionStatus">—</div>
-  </div>
+      <!-- =====================
+           COMPANY CONTEXT
+      ====================== -->
+      <div class="card">
+        <h2 id="companyName">Company</h2>
+        <p class="muted">Company dashboard</p>
+      </div>
 
-  <div class="row">
-    <div class="label">Valid Till</div>
-    <div class="value" id="subscriptionExpiry">—</div>
-  </div>
+      <!-- =====================
+           SUBSCRIPTION SUMMARY
+      ====================== -->
+      <div class="card" style="margin-top:20px;">
+        <h3>Subscription</h3>
 
-  <div class="row">
-    <div class="label">Agent Installed</div>
-    <div class="value" id="agentStatus">—</div>
-  </div>
+        <div class="row">
+          <span>Status</span>
+          <strong id="subStatus">—</strong>
+        </div>
 
-  <div class="row">
-    <div class="label">Last Stock Sync</div>
-    <div class="value" id="lastSync">—</div>
-  </div>
+        <div class="row">
+          <span>Valid Till</span>
+          <strong id="subValid">—</strong>
+        </div>
+
+        <button
+          id="subAction"
+          class="btn btn-primary"
+          style="margin-top:12px;"
+          onclick="subscriptionAction()"
+        >
+          —
+        </button>
+      </div>
+
+      <!-- =====================
+           AGENT STATUS
+      ====================== -->
+      <div class="card" style="margin-top:20px;">
+        <h3>Agent</h3>
+
+        <p id="agentStatus" class="muted">Checking agent status…</p>
+
+        <button
+          id="agentBtn"
+          class="btn btn-outline"
+          style="margin-top:12px; display:none;"
+          onclick="location.href='agent-install.html'"
+        >
+          Install Agent
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>© TallyInsight</footer>
 </div>
-
-<!-- =========================
-     ACTIONS
-========================= -->
-<div class="card">
-  <h3>Actions</h3>
-
-  <button class="primary" onclick="location.href='images.html'">
-    Manage Item Images
-  </button>
-
-  <button class="secondary" onclick="location.href='users.html'">
-    Manage Users
-  </button>
-
-  <button class="secondary" onclick="location.href='subscription.html'">
-    Subscription
-  </button>
-</div>
-
-<button class="danger" onclick="logout()">Logout</button>
 
 <script>
 const API = 'https://tallyinsight-backend-1.onrender.com';
@@ -100,68 +85,84 @@ const userId = localStorage.getItem('x-user-id');
 const companyId = localStorage.getItem('x-company-id');
 
 if (!userId || !companyId) {
-  location.href = 'index.html';
+  location.href = 'login.html';
 }
 
 /* =========================
-   GUARD + LOAD
+   LOAD SUBSCRIPTION
 ========================= */
-async function init() {
-  // subscription
-  const sub = await fetch(`${API}/subscription/status`, {
-    headers: { 'x-user-id': userId, 'x-company-id': companyId }
-  }).then(r => r.json());
+let currentStatus = null;
 
-  if (sub.status === 'NO_SUBSCRIPTION') {
-    location.href = 'subscription.html';
-    return;
+fetch(`${API}/subscriptions/status`, {
+  headers: {
+    'x-user-id': userId,
+    'x-company-id': companyId
   }
+})
+.then(r => r.json())
+.then(sub => {
+  currentStatus = sub.status;
 
-  document.getElementById('subscriptionStatus').textContent = sub.status;
-  document.getElementById('subscriptionExpiry').textContent =
+  document.getElementById('subStatus').textContent = sub.status;
+  document.getElementById('subValid').textContent =
     sub.expiry_date || sub.trial_end || '—';
 
-  // agent
-  const devices = await fetch(`${API}/admin/devices`, {
-    headers: { 'x-user-id': userId, 'x-company-id': companyId }
-  }).then(r => r.json());
+  const btn = document.getElementById('subAction');
 
-  if (!devices || devices.length === 0) {
-    location.href = 'agent-install.html';
+  if (sub.status === 'TRIAL') {
+    btn.textContent = 'Install Agent';
+  } else if (sub.status === 'ACTIVE') {
+    btn.textContent = 'View Subscription';
+  } else {
+    btn.textContent = 'Renew Subscription';
+  }
+})
+.catch(() => {
+  document.getElementById('subStatus').textContent = 'Unavailable';
+});
+
+/* =========================
+   AGENT STATUS (SAFE)
+========================= */
+fetch(`${API}/sync/last`, {
+  headers: {
+    'x-user-id': userId,
+    'x-company-id': companyId
+  }
+})
+.then(r => r.ok ? r.json() : Promise.reject())
+.then(data => {
+  if (!data.last_sync_at) {
+    document.getElementById('agentStatus').textContent =
+      'Agent not connected';
+    document.getElementById('agentBtn').style.display = 'block';
     return;
   }
 
-  document.getElementById('agentStatus').textContent = 'Yes';
+  const d = new Date(data.last_sync_at);
+  document.getElementById('agentStatus').textContent =
+    'Last sync: ' + d.toLocaleString();
+})
+.catch(() => {
+  document.getElementById('agentStatus').textContent =
+    'Agent not connected';
+  document.getElementById('agentBtn').style.display = 'block';
+});
 
-  // company name
-  const mine = await fetch(`${API}/companies/mine`, {
-    headers: { 'x-user-id': userId }
-  }).then(r => r.json());
-
-  const company = (mine.companies || [])
-    .find(c => c.company_id === companyId);
-
-  if (company) {
-    document.getElementById('companyName').textContent =
-      company.company_name;
+/* =========================
+   ACTIONS
+========================= */
+function subscriptionAction() {
+  if (currentStatus === 'TRIAL') {
+    location.href = 'agent-install.html';
+  } else {
+    location.href = 'subscription.html';
   }
-
-  // last sync
-  const sync = await fetch(`${API}/sync/last`, {
-    headers: { 'x-user-id': userId, 'x-company-id': companyId }
-  }).then(r => r.json());
-
-  document.getElementById('lastSync').textContent =
-    sync.last_sync_at
-      ? new Date(sync.last_sync_at).toLocaleString()
-      : 'Never';
 }
-
-init();
 
 function logout() {
   localStorage.clear();
-  location.href = 'index.html';
+  location.href = 'login.html';
 }
 </script>
 

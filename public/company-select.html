@@ -82,7 +82,7 @@ fetch(`${API_BASE}/companies/mine`, {
     btn.onclick = () => {
       localStorage.setItem('x-company-id', c.company_id);
       // 🔒 LOCKED FLOW: go to subscription
-      window.location.href = 'subscription.html';
+      window.location.href = 'dashboard.html';
     };
 
     list.appendChild(btn);
