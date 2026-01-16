@@ -27,7 +27,7 @@
 
       <div id="companyList"></div>
 
-      <!-- Create new company (admin only, always visible safely) -->
+      <!-- Create new company (admin only) -->
       <button
         id="createCompanyBtn"
         class="btn btn-primary"
@@ -62,8 +62,8 @@ fetch(`${API_BASE}/companies/mine`, {
   }
 })
 .then(res => res.ok ? res.json() : Promise.reject())
-.then(({ companies }) => {
-  if (!companies || companies.length === 0) {
+.then(companies => {
+  if (!Array.isArray(companies) || companies.length === 0) {
     document.getElementById('error').textContent =
       'No companies found for this account';
     return;
@@ -81,13 +81,14 @@ fetch(`${API_BASE}/companies/mine`, {
 
     btn.onclick = () => {
       localStorage.setItem('x-company-id', c.company_id);
-      window.location.href = 'dashboard.html';
+      // 🔒 LOCKED FLOW: go to subscription
+      window.location.href = 'subscription.html';
     };
 
     list.appendChild(btn);
   });
 
-  // Admins can always create new companies
+  // Admins can create new companies
   if (userRole === 'ADMIN') {
     document.getElementById('createCompanyBtn').style.display = 'block';
   }
