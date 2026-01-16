@@ -4,18 +4,20 @@
   <meta charset="UTF-8" />
   <title>Select Company – TallyInsight</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
 <div class="page">
 
+  <!-- ===== Header ===== -->
   <header>
     <div class="container header-inner">
       <div class="logo">TallyInsight</div>
     </div>
   </header>
 
+  <!-- ===== Company Selection ===== -->
   <section class="hero">
     <div class="container" style="max-width:600px;">
       <h1 style="font-size:28px;">Select Company</h1>
@@ -24,6 +26,17 @@
       </p>
 
       <div id="companyList"></div>
+
+      <!-- Create new company (admin only, always visible safely) -->
+      <button
+        id="createCompanyBtn"
+        class="btn btn-primary"
+        style="width:100%; margin-top:12px; display:none;"
+        onclick="location.href='company-create.html'"
+      >
+        + Create New Company
+      </button>
+
       <div id="error" style="margin-top:16px; color:#dc2626;"></div>
     </div>
   </section>
@@ -32,39 +45,56 @@
 </div>
 
 <script>
-const API = 'https://tallyinsight-backend-1.onrender.com';
-const adminId = localStorage.getItem('x-user-id');
+const API_BASE = 'https://tallyinsight-backend-1.onrender.com';
+const userId = localStorage.getItem('x-user-id');
+const userRole = localStorage.getItem('x-user-role');
 
-if (!adminId) {
-  window.location.href = '/login.html';
+if (!userId) {
+  window.location.href = 'login.html';
 }
 
-fetch(`${API}/admin/companies`, {
-  headers: { 'x-admin-id': adminId }
+/* =========================
+   FETCH COMPANIES
+========================= */
+fetch(`${API_BASE}/companies/mine`, {
+  headers: {
+    'x-user-id': userId
+  }
 })
-.then(r => r.ok ? r.json() : Promise.reject())
-.then(companies => {
-  if (!companies.length) {
-    document.getElementById('error').textContent = 'No companies found';
+.then(res => res.ok ? res.json() : Promise.reject())
+.then(({ companies }) => {
+  if (!companies || companies.length === 0) {
+    document.getElementById('error').textContent =
+      'No companies found for this account';
     return;
   }
 
   const list = document.getElementById('companyList');
+  list.innerHTML = '';
+
   companies.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'btn btn-outline';
     btn.style.width = '100%';
     btn.style.marginBottom = '12px';
     btn.textContent = c.company_name;
+
     btn.onclick = () => {
       localStorage.setItem('x-company-id', c.company_id);
-      window.location.href = '/dashboard.html';
+      window.location.href = 'dashboard.html';
     };
+
     list.appendChild(btn);
   });
+
+  // Admins can always create new companies
+  if (userRole === 'ADMIN') {
+    document.getElementById('createCompanyBtn').style.display = 'block';
+  }
 })
 .catch(() => {
-  document.getElementById('error').textContent = 'Failed to load companies';
+  document.getElementById('error').textContent =
+    'Failed to load companies';
 });
 </script>
 

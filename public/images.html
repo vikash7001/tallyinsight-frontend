@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Item Images – TallyInsight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f7f9;
+      padding: 30px;
+    }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      font-size: 14px;
+    }
+    th { background:#f1f5f9; }
+    button {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+    .edit { background:#2563eb; color:white; }
+    .save { background:#16a34a; color:white; }
+    .disabled { opacity:0.5; cursor:not-allowed; }
+    .error { color:#dc2626; font-size:12px; }
+  </style>
+</head>
+
+<body>
+
+<div class="section">
+  <h2>Item Image Manager</h2>
+  <table id="itemsTable">
+    <thead>
+      <tr>
+        <th>Item Code</th>
+        <th>Item Name</th>
+        <th>Image URL</th>
+        <th>Action</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
+const userId = localStorage.getItem('x-user-id');
+const companyId = localStorage.getItem('x-company-id');
+
+if (!userId || !companyId) {
+  location.href = 'index.html';
+}
+
+fetch(`${API}/items`, {
+  headers: { 'x-user-id': userId, 'x-company-id': companyId }
+})
+.then(r => r.json())
+.then(items => {
+  const tbody = document.querySelector('tbody');
+
+  items.forEach(i => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i.item_code}</td>
+      <td>${i.item_name}</td>
+      <td><input value="${i.image_url || ''}" disabled /></td>
+      <td>
+        <button class="edit">Edit</button>
+        <button class="save disabled" disabled>Save</button>
+      </td>
+      <td class="status"></td>
+    `;
+    wire(tr, i.item_code);
+    tbody.appendChild(tr);
+  });
+});
+
+function wire(tr, code) {
+  const input = tr.querySelector('input');
+  const edit = tr.querySelector('.edit');
+  const save = tr.querySelector('.save');
+  const status = tr.querySelector('.status');
+
+  edit.onclick = () => {
+    input.disabled = false;
+    save.disabled = false;
+    save.classList.remove('disabled');
+    edit.disabled = true;
+  };
+
+  save.onclick = () => {
+    fetch(`${API}/items/${code}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': userId,
+        'x-company-id': companyId
+      },
+      body: JSON.stringify({ image_url: input.value.trim() })
+    })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(() => {
+      input.disabled = true;
+      edit.disabled = false;
+      save.disabled = true;
+      save.classList.add('disabled');
+      status.textContent = '';
+    })
+    .catch(() => {
+      status.innerHTML = '<span class="error">Update failed</span>';
+    });
+  };
+}
+</script>
+
+</body>
+</html>

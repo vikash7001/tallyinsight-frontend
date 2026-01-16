@@ -2,107 +2,172 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TallyInsight – Choose Plan</title>
+  <title>Subscription – TallyInsight</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background:#f6f7f9;
+      padding:30px;
+    }
+    .card {
+      background:white;
+      padding:24px;
+      border-radius:8px;
+      max-width:480px;
+      margin:auto;
+      box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    }
+    h2 { margin-bottom:10px; }
+    .row {
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:8px;
+      font-size:14px;
+    }
+    .label { color:#6b7280; }
+    .value { font-weight:600; }
+    button {
+      width:100%;
+      padding:12px;
+      margin-top:16px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:15px;
+    }
+    .primary { background:#2563eb; color:white; }
+    .danger { background:#dc2626; color:white; }
+    .muted {
+      margin-top:12px;
+      font-size:13px;
+      color:#6b7280;
+      text-align:center;
+    }
+  </style>
 </head>
 
 <body>
-<div class="page">
 
-<header>
-  <div class="container header-inner">
-    <div class="logo">TallyInsight</div>
+<div class="card">
+  <h2>Subscription</h2>
+
+  <div class="row">
+    <div class="label">Status</div>
+    <div class="value" id="status">—</div>
   </div>
-</header>
 
-<section class="hero">
-  <div class="container" style="max-width:720px;">
-    <h1>Select your plan</h1>
-    <p style="color:var(--text-muted); margin-bottom:32px;">
-      You can change your plan later. No payment required to start the trial.
-    </p>
-
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-
-      <!-- TRIAL -->
-      <div class="card">
-        <h2>Free Trial</h2>
-        <p>Try all core features for a limited time.</p>
-        <ul style="font-size:14px;">
-          <li>✔ Sync one Tally company</li>
-          <li>✔ View stock on Android</li>
-          <li>✔ Manage item images</li>
-        </ul>
-
-        <button
-          class="btn btn-primary"
-          style="width:100%; margin-top:16px;"
-          onclick="selectPlan('trial')"
-        >
-          Start Free Trial
-        </button>
-      </div>
-
-      <!-- PAID -->
-      <div class="card">
-        <h2>Paid Plan</h2>
-        <p>Unlock full access and long-term usage.</p>
-        <ul style="font-size:14px;">
-          <li>✔ Unlimited sync</li>
-          <li>✔ Priority support</li>
-          <li>✔ No trial limits</li>
-        </ul>
-
-        <button
-          class="btn btn-outline"
-          style="width:100%; margin-top:16px;"
-          onclick="selectPlan('paid')"
-        >
-          Buy Subscription
-        </button>
-      </div>
-
-    </div>
+  <div class="row">
+    <div class="label">Valid Till</div>
+    <div class="value" id="validTill">—</div>
   </div>
-</section>
 
-<footer>© TallyInsight</footer>
+  <div class="row">
+    <div class="label">Plan</div>
+    <div class="value">Standard</div>
+  </div>
 
+  <button id="primaryAction" class="primary" onclick="primaryAction()">
+    —
+  </button>
+
+  <div id="note" class="muted"></div>
 </div>
 
 <script>
 const API = 'https://tallyinsight-backend-1.onrender.com';
-
 const userId = localStorage.getItem('x-user-id');
 const companyId = localStorage.getItem('x-company-id');
 
-/* =========================
-   IDENTITY GUARD
-========================= */
 if (!userId || !companyId) {
-  window.location.href = 'signup.html';
+  location.href = 'index.html';
 }
 
+let currentStatus = null;
+
 /* =========================
-   PLAN SELECTION
+   LOAD SUBSCRIPTION STATUS
 ========================= */
-function selectPlan(plan) {
-  fetch(`${API}/subscriptions/create`, {
+fetch(`${API}/subscriptions/status`, {
+  headers: {
+    'x-user-id': userId,
+    'x-company-id': companyId
+  }
+})
+.then(r => r.json())
+.then(sub => {
+  currentStatus = sub.status;
+
+  document.getElementById('status').textContent = sub.status;
+
+  document.getElementById('validTill').textContent =
+    sub.expiry_date || sub.trial_end || '—';
+
+  const btn = document.getElementById('primaryAction');
+  const note = document.getElementById('note');
+
+  /* =========================
+     STATE-BASED UI
+  ========================= */
+  if (sub.status === 'TRIAL') {
+    btn.textContent = 'Continue';
+    note.textContent = 'You are currently on a free trial.';
+  }
+
+  else if (sub.status === 'ACTIVE') {
+    btn.textContent = 'Renew Subscription';
+    note.textContent = 'Your subscription is active.';
+  }
+
+  else if (sub.status === 'GRACE') {
+    btn.textContent = 'Renew Now';
+    btn.className = 'danger';
+    note.textContent = 'Your subscription has expired. Renew to avoid disruption.';
+  }
+
+  else if (sub.status === 'EXPIRED') {
+    btn.textContent = 'Renew to Continue';
+    btn.className = 'danger';
+    note.textContent = 'Subscription expired. Access is blocked.';
+  }
+
+  else {
+    btn.textContent = 'Contact Support';
+    btn.disabled = true;
+  }
+})
+.catch(() => {
+  alert('Failed to load subscription status');
+});
+
+/* =========================
+   PRIMARY ACTION
+========================= */
+function primaryAction() {
+  // Trial → continue onboarding
+  if (currentStatus === 'TRIAL') {
+    location.href = 'agent-install.html';
+    return;
+  }
+
+  // Active / Grace / Expired → renew
+  fetch(`${API}/subscriptions/renew`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-user-id': userId,
       'x-company-id': companyId
     },
-    body: JSON.stringify({ plan })
+    body: JSON.stringify({ months: 12 })
   })
-  .then(res => res.ok ? res.json() : Promise.reject())
+  .then(r => r.ok ? r.json() : Promise.reject())
   .then(() => {
-    window.location.href = 'agent-install.html';
+    alert('Subscription renewed successfully');
+    location.href = 'dashboard.html';
   })
   .catch(() => {
-    alert('Failed to activate subscription');
+    alert('Failed to renew subscription');
   });
 }
 </script>

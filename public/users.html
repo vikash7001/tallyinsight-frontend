@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Users – TallyInsight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background:#f6f7f9;
+      padding:30px;
+    }
+    .card {
+      background:white;
+      padding:20px;
+      border-radius:8px;
+      margin-bottom:20px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+    }
+    th, td {
+      border:1px solid #e5e7eb;
+      padding:8px;
+      font-size:14px;
+    }
+    th { background:#f1f5f9; }
+    input, select {
+      padding:8px;
+      width:100%;
+      margin-bottom:10px;
+    }
+    button {
+      padding:8px 12px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    .primary { background:#2563eb; color:white; }
+    .error { color:#dc2626; font-size:13px; }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Company Users</h2>
+
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Mobile</th>
+        <th>Email</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Add User</h3>
+
+  <input id="mobile" placeholder="Mobile number" />
+  <input id="email" placeholder="Email (optional)" />
+
+  <select id="role">
+    <option value="USER">User</option>
+    <option value="ADMIN">Admin</option>
+  </select>
+
+  <button class="primary" onclick="addUser()">Add User</button>
+  <div id="error" class="error"></div>
+</div>
+
+<script>
+const API = 'https://tallyinsight-backend-1.onrender.com';
+const userId = localStorage.getItem('x-user-id');
+const companyId = localStorage.getItem('x-company-id');
+
+if (!userId || !companyId) {
+  location.href = 'index.html';
+}
+
+/* =========================
+   LOAD USERS
+========================= */
+fetch(`${API}/admin/users`, {
+  headers: { 'x-user-id': userId, 'x-company-id': companyId }
+})
+.then(r => r.json())
+.then(users => {
+  const tbody = document.querySelector('#usersTable tbody');
+  tbody.innerHTML = '';
+
+  users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.mobile || ''}</td>
+      <td>${u.email || ''}</td>
+      <td>${u.role}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+});
+
+/* =========================
+   ADD USER
+========================= */
+function addUser() {
+  const mobile = document.getElementById('mobile').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const role = document.getElementById('role').value;
+
+  if (!/^\d{10}$/.test(mobile)) {
+    showError('Valid mobile number required');
+    return;
+  }
+
+  fetch(`${API}/admin/users`, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-user-id':userId,
+      'x-company-id':companyId
+    },
+    body: JSON.stringify({ mobile, email, role })
+  })
+  .then(r => r.ok ? location.reload() : Promise.reject())
+  .catch(() => showError('Failed to add user'));
+}
+
+function showError(msg) {
+  document.getElementById('error').textContent = msg;
+}
+</script>
+
+</body>
+</html>

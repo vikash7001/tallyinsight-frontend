@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TallyInsight Admin Dashboard</title>
+  <title>TallyInsight Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -11,286 +11,157 @@
       background: #f6f7f9;
       padding: 30px;
     }
-
-    h2, h3 {
-      margin-bottom: 6px;
-    }
-
-    .section {
+    .card {
       background: white;
       padding: 20px;
       border-radius: 8px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
-
-    input[type="text"] {
-      padding: 8px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 8px;
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
       font-size: 14px;
     }
-
-    th {
-      background: #f1f5f9;
-      text-align: left;
-    }
-
+    .label { color:#6b7280; }
+    .value { font-weight:600; }
     button {
-      padding: 6px 10px;
-      margin-right: 4px;
+      padding: 10px 14px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 4px;
-      border: none;
     }
-
-    .edit {
-      background: #2563eb;
-      color: white;
-    }
-
-    .save {
-      background: #16a34a;
-      color: white;
-    }
-
-    .disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .error {
-      color: #dc2626;
-      font-size: 12px;
-    }
-
-    .logout {
-      background: #dc2626;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-    }
+    .primary { background:#2563eb; color:white; }
+    .secondary { background:#374151; color:white; }
+    .danger { background:#dc2626; color:white; }
   </style>
 </head>
+
 <body>
 
 <!-- =========================
-     PRIMARY: ITEM IMAGE MANAGER
+     COMPANY INFO
 ========================= -->
-<div class="section">
-  <h2>Item Image Manager</h2>
+<div class="card">
+  <h2>Company Overview</h2>
 
-  <!-- ✅ LAST SYNC -->
-  <div id="lastSync" style="margin-bottom:10px; color:#6b7280; font-size:13px;">
-    Last sync: —
+  <div class="row">
+    <div class="label">Company</div>
+    <div class="value" id="companyName">—</div>
   </div>
 
-  <input
-    type="text"
-    id="searchBox"
-    placeholder="Search by item code or name..."
-  />
+  <div class="row">
+    <div class="label">Subscription</div>
+    <div class="value" id="subscriptionStatus">—</div>
+  </div>
 
-  <table id="itemsTable">
-    <thead>
-      <tr>
-        <th>Item Code</th>
-        <th>Item Name</th>
-        <th>Stock</th>
-        <th>Image URL</th>
-        <th>Action</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="row">
+    <div class="label">Valid Till</div>
+    <div class="value" id="subscriptionExpiry">—</div>
+  </div>
+
+  <div class="row">
+    <div class="label">Agent Installed</div>
+    <div class="value" id="agentStatus">—</div>
+  </div>
+
+  <div class="row">
+    <div class="label">Last Stock Sync</div>
+    <div class="value" id="lastSync">—</div>
+  </div>
 </div>
 
 <!-- =========================
-     SECONDARY: EXCEL TOOLS
+     ACTIONS
 ========================= -->
-<div class="section" style="max-width:420px; margin-left:auto;">
-  <details>
-    <summary>📦 Bulk Update (Excel – Advanced)</summary>
+<div class="card">
+  <h3>Actions</h3>
 
-    <button onclick="downloadExcel()">Download Excel</button>
+  <button class="primary" onclick="location.href='images.html'">
+    Manage Item Images
+  </button>
 
-    <div style="margin-top:10px;">
-      <input type="file" id="excelFile" accept=".xlsx" />
-      <button onclick="uploadExcel()">Upload Excel</button>
-    </div>
+  <button class="secondary" onclick="location.href='users.html'">
+    Manage Users
+  </button>
 
-    <pre id="result"></pre>
-  </details>
+  <button class="secondary" onclick="location.href='subscription.html'">
+    Subscription
+  </button>
 </div>
 
-<button class="logout" onclick="logout()">Logout</button>
+<button class="danger" onclick="logout()">Logout</button>
 
 <script>
-const API_BASE = 'https://tallyinsight-backend-1.onrender.com';
-
-const companyId = localStorage.getItem('x-company-id');
+const API = 'https://tallyinsight-backend-1.onrender.com';
 const userId = localStorage.getItem('x-user-id');
+const companyId = localStorage.getItem('x-company-id');
 
-if (!companyId || !userId) {
-  window.location.href = 'index.html';
+if (!userId || !companyId) {
+  location.href = 'index.html';
 }
 
-/* ======================
-   LAST SYNC INDICATOR
-====================== */
-fetch(`${API_BASE}/sync/last`, {
-  headers: {
-    'x-company-id': companyId,
-    'x-user-id': userId
-  }
-})
-.then(res => res.ok ? res.json() : Promise.reject())
-.then(({ last_sync_at }) => {
-  const el = document.getElementById('lastSync');
-  if (!last_sync_at) {
-    el.textContent = 'Last sync: never';
+/* =========================
+   GUARD + LOAD
+========================= */
+async function init() {
+  // subscription
+  const sub = await fetch(`${API}/subscription/status`, {
+    headers: { 'x-user-id': userId, 'x-company-id': companyId }
+  }).then(r => r.json());
+
+  if (sub.status === 'NO_SUBSCRIPTION') {
+    location.href = 'subscription.html';
     return;
   }
-  const d = new Date(last_sync_at);
-  el.textContent = 'Last sync: ' + d.toLocaleString();
-})
-.catch(() => {
+
+  document.getElementById('subscriptionStatus').textContent = sub.status;
+  document.getElementById('subscriptionExpiry').textContent =
+    sub.expiry_date || sub.trial_end || '—';
+
+  // agent
+  const devices = await fetch(`${API}/admin/devices`, {
+    headers: { 'x-user-id': userId, 'x-company-id': companyId }
+  }).then(r => r.json());
+
+  if (!devices || devices.length === 0) {
+    location.href = 'agent-install.html';
+    return;
+  }
+
+  document.getElementById('agentStatus').textContent = 'Yes';
+
+  // company name
+  const mine = await fetch(`${API}/companies/mine`, {
+    headers: { 'x-user-id': userId }
+  }).then(r => r.json());
+
+  const company = (mine.companies || [])
+    .find(c => c.company_id === companyId);
+
+  if (company) {
+    document.getElementById('companyName').textContent =
+      company.company_name;
+  }
+
+  // last sync
+  const sync = await fetch(`${API}/sync/last`, {
+    headers: { 'x-user-id': userId, 'x-company-id': companyId }
+  }).then(r => r.json());
+
   document.getElementById('lastSync').textContent =
-    'Last sync: unavailable';
-});
-
-/* ======================
-   LOAD STOCK & ITEMS
-====================== */
-let allRows = [];
-
-Promise.all([
-  fetch(`${API_BASE}/stock/active`, {
-    headers: {
-      'x-company-id': companyId,
-      'x-user-id': userId
-    }
-  }).then(res => res.json()),
-
-  fetch(`${API_BASE}/items`, {
-    headers: {
-      'x-company-id': companyId,
-      'x-user-id': userId
-    }
-  }).then(res => res.json())
-])
-.then(([stockRows, items]) => {
-
-  const stockMap = {};
-  stockRows.forEach(r => {
-    stockMap[r.item_id] = r.stock_qty;
-  });
-
-  const tbody = document.querySelector('#itemsTable tbody');
-  tbody.innerHTML = '';
-  allRows = [];
-
-  items.forEach(item => {
-    const tr = document.createElement('tr');
-    const stockQty = stockMap[item.item_id] ?? 0;
-
-    tr.innerHTML = `
-      <td>${item.item_code || ''}</td>
-      <td>${item.item_name}</td>
-      <td>${stockQty}</td>
-      <td><input type="text" value="${item.image_url || ''}" disabled /></td>
-      <td>
-        <button class="edit">Edit</button>
-        <button class="save disabled" disabled>Save</button>
-      </td>
-      <td class="status"></td>
-    `;
-
-    tr.dataset.itemId = item.item_id;
-    wireRow(tr);
-    tbody.appendChild(tr);
-    allRows.push(tr);
-  });
-})
-.catch(err => {
-  console.error('Failed to load stock/items', err);
-});
-
-/* ======================
-   ROW LOGIC
-====================== */
-function wireRow(tr) {
-  const input = tr.querySelector('input');
-  const editBtn = tr.querySelector('.edit');
-  const saveBtn = tr.querySelector('.save');
-  const status = tr.querySelector('.status');
-
-  editBtn.onclick = () => {
-    input.disabled = false;
-    saveBtn.disabled = false;
-    saveBtn.classList.remove('disabled');
-    editBtn.disabled = true;
-    status.textContent = '';
-  };
-
-  saveBtn.onclick = () => {
-    const newUrl = input.value.trim();
-    const itemId = tr.dataset.itemId;
-
-    fetch(`${API_BASE}/items/by-id/${itemId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-company-id': companyId,
-        'x-user-id': userId
-      },
-      body: JSON.stringify({ image_url: newUrl })
-    })
-    .then(res => res.ok ? res.json() : Promise.reject())
-    .then(() => {
-      input.disabled = true;
-      editBtn.disabled = false;
-      saveBtn.classList.add('disabled');
-      saveBtn.disabled = true;
-      status.textContent = '';
-    })
-    .catch(() => {
-      status.innerHTML = '<span class="error">Update failed</span>';
-    });
-  };
+    sync.last_sync_at
+      ? new Date(sync.last_sync_at).toLocaleString()
+      : 'Never';
 }
 
-/* ======================
-   SEARCH
-====================== */
-document.getElementById('searchBox').addEventListener('input', e => {
-  const q = e.target.value.toLowerCase();
-  allRows.forEach(row => {
-    const code = row.children[0].textContent.toLowerCase();
-    const name = row.children[1].textContent.toLowerCase();
-    row.style.display =
-      code.includes(q) || name.includes(q) ? '' : 'none';
-  });
-});
+init();
 
-/* ======================
-   LOGOUT
-====================== */
 function logout() {
   localStorage.clear();
-  window.location.href = 'index.html';
+  location.href = 'index.html';
 }
 </script>
 
